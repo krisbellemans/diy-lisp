@@ -5,16 +5,31 @@ from ast import is_boolean, is_list
 from types import LispError
 
 """
-This is the parser module, with the `parse` function which you'll implement as part 1 of
-the workshop. Its job is to convert strings into data structures that the evaluator can 
+This it the parser module, with the `parse` function which you'll implement as part 1 of
+the workshop. It's job is to convert strings into data structures that the evaluator can 
 understand. 
 """
 
 def parse(source):
     """Parse string representation of one *single* expression
     into the corresponding Abstract Syntax Tree."""
-
-    raise NotImplementedError("DIY")
+    source = remove_comments(source)
+    source = source.strip()
+    if source.startswith('('):
+	last = find_matching_paren(source)
+	if len(source) != last + 1:
+	    raise LispError("Expected EOF")
+	return [parse(exp) for exp in split_exps(source[1:last])]
+    elif source.startswith("'"):
+	return parse("(quote " + source[1:] + ')')
+    elif source == "#t":
+	return True
+    elif source == "#f":
+	return False
+    elif source.isdigit():
+	return int(source)
+    else:
+	return source
 
 ##
 ## Below are a few useful utility functions. These should come in handy when 
@@ -74,7 +89,7 @@ def first_expression(source):
         return source[:last + 1], source[last + 1:]
     else:
         match = re.match(r"^[^\s)']+", source)
-        end = match.end()
+	end = match.end()
         atom = source[:end]
         return atom, source[end:]
 
