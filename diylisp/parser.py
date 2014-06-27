@@ -46,17 +46,17 @@ def find_matching_paren(source, start=0):
     the index of the matching closing paren."""
 
     assert source[start] == '('
-    pos = start
-    open_brackets = 1
-    while open_brackets > 0:
-        pos += 1
-        if len(source) == pos:
-            raise LispError("Incomplete expression: %s" % source[start:])
-        if source[pos] == '(':
-            open_brackets += 1
-        if source[pos] == ')':
-            open_brackets -= 1
-    return pos
+    paren = []
+    for pos, c in enumerate(source[start:]):
+	if c == '(':
+	    paren.append(pos)
+	elif c == ')':
+	    try:
+		if (paren.pop() == start):
+		    return pos
+	    except IndexError:
+		raise LispError("Incomplete expression: %s" % source[start:])
+    raise LispError("Incomplete expression: %s" % source[start:])
 
 def split_exps(source):
     """Splits a source string into subexpressions 
